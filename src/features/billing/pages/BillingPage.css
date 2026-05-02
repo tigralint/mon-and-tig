@@ -1,0 +1,113 @@
+/* Billing Page */
+.billing-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.billing-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.billing-status {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+/* Pricing Cards */
+.pricing-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pricing-card {
+  flex: 1 1 280px;
+  padding: 28px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.premium-card {
+  border: 2px solid var(--accent-gold);
+  position: relative;
+  box-shadow: 0 4px 20px rgba(196, 167, 125, 0.15);
+}
+
+.premium-card:hover {
+  box-shadow: 0 8px 30px rgba(196, 167, 125, 0.25);
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  background-color: var(--accent-gold);
+  color: var(--bg-primary);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.pricing-price {
+  font-size: 36px;
+  font-weight: bold;
+  margin: 16px 0;
+}
+
+.pricing-desc {
+  margin-bottom: 24px;
+}
+
+.pricing-features {
+  flex: 1;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.pricing-features li {
+  margin-bottom: 8px;
+}
+
+.pricing-btn {
+  width: 100%;
+  padding: 14px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .billing-header {
+    margin-bottom: 20px;
+  }
+
+  .billing-status {
+    margin-bottom: 20px;
+  }
+
+  .pricing-cards {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .pricing-card {
+    padding: 20px;
+  }
+
+  .pricing-price {
+    font-size: 28px;
+  }
+}

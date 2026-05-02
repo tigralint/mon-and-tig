@@ -1,0 +1,346 @@
+.constellation-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: #000003;
+}
+
+/* Header — fade into cosmos */
+.constellation-overlay-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 28px 36px 40px;
+  background: linear-gradient(180deg,
+    rgba(0,0,3,0.9) 0%,
+    rgba(0,0,3,0.5) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.constellation-overlay-header h2 {
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  color: rgba(232, 230, 227, 0.75);
+  margin: 0 0 4px 0;
+}
+
+.constellation-overlay-header p {
+  color: rgba(138, 138, 142, 0.45);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+
+.constellation-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.constellation-reindex-btn {
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  color: rgba(196, 167, 125, 0.7);
+  background: rgba(196, 167, 125, 0.08);
+  border: 1px solid rgba(196, 167, 125, 0.15);
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.constellation-reindex-btn:hover:not(:disabled) {
+  background: rgba(196, 167, 125, 0.15);
+  color: rgba(196, 167, 125, 0.9);
+}
+
+.constellation-reindex-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.constellation-reindex-status {
+  color: rgba(196, 167, 125, 0.6);
+  font-size: 0.6rem;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Canvas container */
+.constellation-graph-container {
+  flex: 1;
+  position: relative;
+  background: #000003;
+}
+
+/* Тултип от ForceGraph — переопределяем */
+.constellation-graph-container .scene-tooltip {
+  font-family: var(--font-family-sans) !important;
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+}
+
+/* Bottom hint */
+.constellation-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: rgba(138, 138, 142, 0.2);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* Empty state */
+.constellation-empty-3d {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px;
+  background: #000003;
+}
+
+.constellation-empty-3d .empty-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  opacity: 0.25;
+}
+
+.constellation-empty-3d h3 {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: rgba(232, 230, 227, 0.6);
+  margin-bottom: 8px;
+}
+
+.constellation-empty-3d p {
+  color: rgba(138, 138, 142, 0.5);
+  font-size: 0.85rem;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Link Panel — боковая панель связи
+   ============================================================ */
+.link-panel {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  z-index: 20;
+  width: 320px;
+  max-height: calc(100% - 120px);
+  overflow-y: auto;
+  background: rgba(8, 8, 12, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(196, 167, 125, 0.15);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 30px rgba(196, 167, 125, 0.04);
+  animation: panelSlide 0.3s ease-out;
+}
+
+@keyframes panelSlide {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.link-panel-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: rgba(138, 138, 142, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.link-panel-close:hover {
+  color: rgba(232, 230, 227, 0.8);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Header */
+.link-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.link-panel-doc {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(232, 230, 227, 0.85);
+  padding: 4px 10px;
+  background: rgba(196, 167, 125, 0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(196, 167, 125, 0.12);
+}
+
+.link-panel-arrow {
+  color: rgba(196, 167, 125, 0.4);
+  font-size: 14px;
+}
+
+/* Similarity bar */
+.link-panel-sim {
+  margin-bottom: 20px;
+}
+
+.link-panel-sim-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.link-panel-sim-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(196, 167, 125, 0.4), rgba(196, 167, 125, 0.8));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.link-panel-sim-label {
+  font-size: 0.7rem;
+  color: rgba(138, 138, 142, 0.6);
+  letter-spacing: 0.3px;
+}
+
+/* Sections */
+.link-panel-section {
+  margin-bottom: 18px;
+}
+
+.link-panel-section-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(138, 138, 142, 0.5);
+  margin-bottom: 10px;
+}
+
+.link-panel-chunk-sim {
+  color: rgba(196, 167, 125, 0.7);
+  margin-left: 6px;
+}
+
+/* Keywords */
+.link-panel-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.link-panel-keyword {
+  font-size: 0.72rem;
+  color: rgba(196, 167, 125, 0.85);
+  background: rgba(196, 167, 125, 0.08);
+  border: 1px solid rgba(196, 167, 125, 0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+/* Excerpts */
+.link-panel-excerpt {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid rgba(196, 167, 125, 0.2);
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 10px;
+}
+
+.link-panel-excerpt p {
+  font-size: 0.75rem;
+  color: rgba(232, 230, 227, 0.6);
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Scrollbar в панели */
+.link-panel::-webkit-scrollbar {
+  width: 3px;
+}
+
+.link-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.link-panel::-webkit-scrollbar-thumb {
+  background: rgba(196, 167, 125, 0.2);
+  border-radius: 2px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .constellation-overlay-header {
+    padding: 16px 16px 24px;
+  }
+
+  .constellation-overlay-header h2 {
+    font-size: 16px;
+  }
+
+  .constellation-hint {
+    bottom: 80px; /* Above BottomNav */
+  }
+
+  /* Link panel becomes bottom sheet on mobile */
+  .link-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 60vh;
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    animation: panelSlideUp 0.3s ease-out;
+  }
+
+  @keyframes panelSlideUp {
+    from { opacity: 0; transform: translateY(100px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .link-panel-header {
+    gap: 6px;
+  }
+
+  .link-panel-doc {
+    font-size: 0.72rem;
+  }
+}

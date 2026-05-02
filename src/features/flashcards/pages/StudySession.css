@@ -1,0 +1,65 @@
+.flashcard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.flashcard.flipped {
+  transform: rotateX(180deg);
+  cursor: default;
+}
+
+.flashcard-front, .flashcard-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-secondary);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.flashcard-back {
+  transform: rotateX(180deg);
+  background-color: var(--bg-tertiary);
+  align-items: flex-start;
+  text-align: left;
+}
+
+.response-btn {
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.btn-again { background-color: rgba(220, 53, 69, 0.1); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); }
+.btn-hard { background-color: rgba(253, 126, 20, 0.1); color: #ffc107; border-color: rgba(255, 193, 7, 0.3); }
+.btn-good { background-color: rgba(40, 167, 69, 0.1); color: #51cf66; border-color: rgba(81, 207, 102, 0.3); }
+.btn-easy { background-color: rgba(32, 201, 151, 0.1); color: #20c997; border-color: rgba(32, 201, 151, 0.3); }
+
+.response-btn:hover {
+  filter: brightness(1.2);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .flashcard-front, .flashcard-back {
+    padding: var(--spacing-lg);
+  }
+
+  .response-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+}

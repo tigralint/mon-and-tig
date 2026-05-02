@@ -1,0 +1,73 @@
+.document-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.document-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--bg-tertiary);
+}
+
+.doc-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.doc-info {
+  flex: 1;
+  min-width: 0; /* for text truncation */
+}
+
+.doc-name {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-meta {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.doc-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.document-card:hover .doc-actions {
+  opacity: 1;
+}
+
+.doc-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s;
+  color: var(--text-muted);
+}
+
+.doc-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
