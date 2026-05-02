@@ -4,6 +4,9 @@ import remarkGfm from 'remark-gfm';
 import Skeleton from '../../../components/ui/Skeleton';
 import { AIService } from '../../../services/ai.service';
 import { MemoryService } from '../../../services/memory.service';
+import { FlashcardService } from '../../../services/flashcard.service';
+import { getDB } from '../../../db/database';
+import { useToast } from '../../../components/ui/ToastProvider';
 import './AiSidebar.css';
 
 const AiSidebar = ({ document, actionContext, onClearAction }) => {
@@ -11,9 +14,29 @@ const AiSidebar = ({ document, actionContext, onClearAction }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [summary, setSummary] = useState(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isGeneratingCards, setIsGeneratingCards] = useState(false);
   const messagesEndRef = useRef(null);
+  const { addToast } = useToast();
 
-  // Убрана автоматическая генерация конспекта, теперь по кнопке
+  // Загрузка сохранённого конспекта из БД
+  useEffect(() => {
+    if (document?.id) {
+      loadSavedSummary();
+    }
+  }, [document?.id]);
+
+  const loadSavedSummary = async () => {
+    try {
+      const db = await getDB();
+      const allSummaries = await db.getAll('summaries');
+      const saved = allSummaries.find(s => s.documentId === document.id);
+      if (saved) {
+        setSummary(saved.content);
+      }
+    } catch (e) {
+      console.error('Failed to load saved summary:', e);
+    }
+  };
 
   // Обрабатываем контекстное действие из тулбара
   useEffect(() => {
@@ -33,15 +56,44 @@ const AiSidebar = ({ document, actionContext, onClearAction }) => {
   const generateSummary = async () => {
     setIsSummarizing(true);
     try {
-      // Здесь пока используем старый метод без стриминга для саммари, 
-      // либо можно тоже переделать на стриминг.
       const result = await AIService.summarize(document.textContent);
       setSummary(result);
+
+      // Сохраняем в IndexedDB
+      const db = await getDB();
+      // Удаляем старый конспект если есть
+      const allSummaries = await db.getAll('summaries');
+      const existing = allSummaries.find(s => s.documentId === document.id);
+      if (existing) {
+        await db.delete('summaries', existing.id);
+      }
+      await db.put('summaries', {
+        id: crypto.randomUUID(),
+        documentId: document.id,
+        content: result,
+        createdAt: new Date().toISOString()
+      });
+      addToast('Конспект сохранён', 'success');
     } catch (e) {
       console.error(e);
       setSummary("Не удалось сгенерировать конспект.");
+      addToast('Ошибка при создании конспекта', 'error');
     } finally {
       setIsSummarizing(false);
+    }
+  };
+
+  const handleGenerateCards = async () => {
+    if (!document?.textContent) return;
+    setIsGeneratingCards(true);
+    try {
+      const cards = await FlashcardService.generateFromDocument(document.id, document.textContent);
+      addToast(`Создано ${cards.length} карточек!`, 'success');
+    } catch (e) {
+      console.error(e);
+      addToast('Ошибка при создании карточек: ' + e.message, 'error');
+    } finally {
+      setIsGeneratingCards(false);
     }
   };
 
@@ -128,9 +180,29 @@ ${text}
               <Skeleton height="20px" width="70%" />
             </div>
           ) : summary ? (
-            <div className="markdown-body">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
-            </div>
+            <>
+              <div className="markdown-body">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <button 
+                  className="btn-secondary interactive" 
+                  onClick={handleGenerateCards}
+                  disabled={isGeneratingCards}
+                  style={{ fontSize: '13px', padding: '8px 12px' }}
+                >
+                  {isGeneratingCards ? 'Создаю...' : '🗂 Создать карточки'}
+                </button>
+                <button 
+                  className="btn-secondary interactive" 
+                  onClick={generateSummary}
+                  style={{ fontSize: '13px', padding: '8px 12px' }}
+                  title="Перегенерировать"
+                >
+                  🔄
+                </button>
+              </div>
+            </>
           ) : (
             <button 
               className="generate-btn" 
@@ -138,8 +210,8 @@ ${text}
               style={{
                 width: '100%', 
                 padding: '10px', 
-                backgroundColor: 'var(--color-primary)', 
-                color: 'white', 
+                backgroundColor: 'var(--accent-gold)', 
+                color: 'var(--bg-primary)', 
                 border: 'none', 
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',

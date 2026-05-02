@@ -4,19 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="Lumea — AI-платформа для осмысленного обучения. Загружай лекции, задавай вопросы, запоминай с карточками." />
+    <meta name="theme-color" content="#0a0a0b" />
+    <meta property="og:title" content="Lumea — AI для обучения" />
+    <meta property="og:description" content="Загружай лекции, задавай вопросы по ним, запоминай с интервальным повторением" />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>Lumea</title>
   </head>
   <body>
     <div id="app"></div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

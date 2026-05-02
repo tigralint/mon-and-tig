@@ -40,7 +40,8 @@
 .constellation-header-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   pointer-events: auto;
 }
 
@@ -66,6 +67,53 @@
   opacity: 0.5;
   cursor: wait;
 }
+
+/* Header actions and toggles */
+.constellation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  pointer-events: auto;
+}
+
+.constellation-toggle {
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  color: rgba(138, 138, 142, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.constellation-toggle.active {
+  color: rgba(196, 167, 125, 0.9);
+  background: rgba(196, 167, 125, 0.1);
+  border-color: rgba(196, 167, 125, 0.3);
+}
+
+.constellation-icon-btn {
+  font-size: 0.65rem;
+  color: rgba(232, 230, 227, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.constellation-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 
 .constellation-reindex-status {
   color: rgba(196, 167, 125, 0.6);
@@ -139,10 +187,100 @@
   font-size: 0.85rem;
   max-width: 300px;
   line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.constellation-empty-cta {
+  background: rgba(196, 167, 125, 0.15);
+  color: #e8e6e3;
+  border: 1px solid rgba(196, 167, 125, 0.3);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.constellation-empty-cta:hover {
+  background: rgba(196, 167, 125, 0.25);
+  border-color: rgba(196, 167, 125, 0.5);
 }
 
 /* ============================================================
-   Link Panel — боковая панель связи
+   Onboarding Overlay
+   ============================================================ */
+.constellation-onboarding {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(8, 8, 12, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(196, 167, 125, 0.3);
+  border-radius: 16px;
+  padding: 32px;
+  width: 90%;
+  max-width: 400px;
+  z-index: 50;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  animation: modalFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.onboarding-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.constellation-onboarding h3 {
+  color: #e8e6e3;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.constellation-onboarding ul {
+  text-align: left;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  color: rgba(232, 230, 227, 0.7);
+  font-size: 0.9rem;
+}
+
+.constellation-onboarding li {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.constellation-onboarding-btn {
+  background: #c4a77d;
+  color: #000003;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s;
+}
+
+.constellation-onboarding-btn:hover {
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Link & Node Panel
    ============================================================ */
 .link-panel {
   position: absolute;
@@ -302,6 +440,93 @@
   border-radius: 2px;
 }
 
+/* Node Info */
+.node-panel-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.node-panel-stat {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 80px;
+}
+
+.node-panel-stat-label {
+  font-size: 0.6rem;
+  color: rgba(138, 138, 142, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.node-panel-stat-value {
+  font-size: 0.9rem;
+  color: #e8e6e3;
+  font-weight: 500;
+}
+
+.node-panel-action {
+  width: 100%;
+  padding: 10px;
+  background: rgba(196, 167, 125, 0.15);
+  border: 1px solid rgba(196, 167, 125, 0.3);
+  color: #e8e6e3;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.node-panel-action:hover {
+  background: rgba(196, 167, 125, 0.25);
+}
+
+.node-panel-relations {
+  margin-top: 20px;
+}
+
+.node-panel-relation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.node-panel-relation:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.node-panel-relation-name {
+  font-size: 0.75rem;
+  color: rgba(232, 230, 227, 0.9);
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-panel-relation-sim {
+  font-size: 0.65rem;
+  color: rgba(196, 167, 125, 0.8);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .constellation-overlay-header {
@@ -338,6 +563,36 @@
 
   .link-panel-header {
     gap: 6px;
+  }
+
+  .constellation-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .constellation-reindex-btn {
+    font-size: 0.6rem;
+    padding: 3px 10px;
+  }
+
+  .constellation-controls {
+    gap: 4px;
+  }
+
+  .constellation-toggle {
+    font-size: 0.58rem;
+    padding: 3px 8px;
+    gap: 4px;
+  }
+
+  .constellation-icon-btn {
+    padding: 3px 8px;
+  }
+
+  .constellation-onboarding {
+    width: 92%;
+    padding: 24px;
   }
 
   .link-panel-doc {

@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import './Layout.css';
 
 const routeTitles = {
@@ -14,6 +15,10 @@ const routeTitles = {
 const Header = () => {
   const location = useLocation();
   const title = routeTitles[location.pathname] || 'Lumea';
+
+  useEffect(() => {
+    document.title = `${title} — Lumea`;
+  }, [title]);
 
   return (
     <header className="header fade-in">

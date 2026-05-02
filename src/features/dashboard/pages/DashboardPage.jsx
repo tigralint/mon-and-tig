@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { getDB } from '../../../db/database';
 import { SerendipityService } from '../../../services/serendipity.service';
 import { CognitiveService } from '../../../services/cognitive.service';
 import { FlashcardService } from '../../../services/flashcard.service';
+import { DataService } from '../../../services/data.service';
+import { useToast } from '../../../components/ui/ToastProvider';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -13,6 +15,11 @@ const DashboardPage = () => {
   const [serendipity, setSerendipity] = useState(null);
   const [serendipityLoading, setSerendipityLoading] = useState(true);
   const [cognitiveInsights, setCognitiveInsights] = useState([]);
+  const [showDataWarning, setShowDataWarning] = useState(
+    () => !localStorage.getItem('lumea_data_warning_dismissed')
+  );
+  const importInputRef = useRef(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     loadStats();
@@ -63,6 +70,42 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-page fade-in">
+      {/* Data Warning Banner */}
+      {showDataWarning && (
+        <div className="data-warning-banner slide-up" style={{
+          padding: '14px 20px',
+          backgroundColor: 'rgba(196, 167, 125, 0.08)',
+          border: '1px solid rgba(196, 167, 125, 0.25)',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          marginBottom: '20px',
+        }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+            ⚠️ Ваши данные хранятся <strong>локально в браузере</strong>. Не очищайте кеш — это удалит все документы и карточки.
+          </p>
+          <button
+            onClick={() => {
+              setShowDataWarning(false);
+              localStorage.setItem('lumea_data_warning_dismissed', '1');
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              fontSize: '18px',
+              padding: '4px',
+              flexShrink: 0,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Greeting */}
       <div className="dashboard-greeting">
         <h1>{getGreeting()}</h1>
@@ -154,6 +197,51 @@ const DashboardPage = () => {
           <div className="action-title">Созвездие знаний</div>
           <div className="action-desc">Визуальная карта ваших документов</div>
         </div>
+      </div>
+
+      {/* Data Management */}
+      <div style={{
+        display: 'flex',
+        gap: '12px',
+        marginTop: '8px',
+        justifyContent: 'center',
+      }}>
+        <input 
+          type="file" 
+          accept=".json" 
+          style={{ display: 'none' }} 
+          ref={importInputRef}
+          onChange={async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+              const result = await DataService.importData(file);
+              const { imported } = result;
+              addToast(`Импортировано: ${imported.documents} док., ${imported.flashcards} карт., ${imported.summaries} консп.`, 'success', 5000);
+              loadStats();
+            } catch (err) {
+              addToast('Ошибка импорта: ' + err.message, 'error');
+            }
+            if (importInputRef.current) importInputRef.current.value = '';
+          }}
+        />
+        <button 
+          className="btn-secondary interactive text-small"
+          onClick={() => {
+            DataService.exportData();
+            addToast('Бэкап скачан', 'success');
+          }}
+          style={{ padding: '8px 16px', fontSize: '13px' }}
+        >
+          💾 Скачать бэкап
+        </button>
+        <button 
+          className="btn-secondary interactive text-small"
+          onClick={() => importInputRef.current?.click()}
+          style={{ padding: '8px 16px', fontSize: '13px' }}
+        >
+          📂 Загрузить бэкап
+        </button>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FileUploader from '../components/FileUploader';
 import DocumentCard from '../components/DocumentCard';
-import { DocumentService } from '../../../services/document.service';
+import { DocumentService, onProcessingUpdate } from '../../../services/document.service';
 import Skeleton from '../../../components/ui/Skeleton';
 import { useToast } from '../../../components/ui/ToastProvider';
 import './DocumentsPage.css';
@@ -10,6 +10,7 @@ import './DocumentsPage.css';
 const DocumentsPage = () => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [processing, setProcessing] = useState(new Map());
   const navigate = useNavigate();
   const { addToast } = useToast();
 
@@ -17,7 +18,6 @@ const DocumentsPage = () => {
     setIsLoading(true);
     try {
       const docs = await DocumentService.getAllDocuments();
-      // Сортировка: новые сверху
       setDocuments(docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (error) {
       console.error('Failed to load documents', error);
@@ -28,16 +28,23 @@ const DocumentsPage = () => {
 
   useEffect(() => {
     loadDocuments();
+    const unsub = onProcessingUpdate((map) => {
+      setProcessing(new Map(map));
+      for (const [, info] of map) {
+        if (info.pct === 100) { loadDocuments(); break; }
+      }
+    });
+    return unsub;
   }, []);
 
   const handleFileUpload = async (file) => {
     try {
       await DocumentService.saveDocument(file);
-      await loadDocuments(); // Обновляем список
-      addToast('Документ успешно загружен!', 'success');
+      await loadDocuments();
+      addToast('Документ загружен и обработан!', 'success');
     } catch (error) {
       console.error('Upload failed:', error);
-      addToast('Ошибка при загрузке или парсинге файла', 'error');
+      addToast('Ошибка при загрузке файла', 'error');
     }
   };
 
@@ -69,6 +76,24 @@ const DocumentsPage = () => {
         <h2>Мои документы</h2>
         <p className="text-muted">Загружайте лекции, конспекты и учебники</p>
       </div>
+
+      {processing.size > 0 && (
+        <div className="processing-status">
+          {Array.from(processing.entries()).map(([docId, info]) => (
+            <div key={docId} className="processing-item">
+              <div className="processing-header">
+                <span className="processing-name">{info.name}</span>
+                <span className="processing-label">{info.status}</span>
+              </div>
+              {info.pct >= 0 && (
+                <div className="processing-bar">
+                  <div className="processing-fill" style={{ width: `${info.pct}%` }} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       
       <div className="upload-section">
         <FileUploader onUpload={handleFileUpload} />

@@ -99,7 +99,7 @@ const DocumentViewPage = () => {
       <div className="split-view-container" style={{ display: 'flex', flex: 1, gap: '16px', overflow: 'hidden' }}>
         <div className="document-panel" style={{ flex: '1.5', position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
           {isPdf && contentUrl ? (
-            <PdfViewer fileUrl={contentUrl} />
+            <PdfViewer fileUrl={contentUrl} textContent={document.textContent} ocrPages={document.ocrPages} />
           ) : isWord ? (
             <div className="docx-viewer" style={{ padding: '40px', overflowY: 'auto', height: '100%', background: 'white', color: 'black', fontSize: '16px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: docxHtml || '<p>Загрузка документа...</p>' }} />
           ) : (

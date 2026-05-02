@@ -14,10 +14,31 @@
   box-shadow: var(--shadow-md);
   border-radius: 4px;
   overflow: hidden;
-  background: white; /* PDF pages usually have white background */
+  background: white;
+  position: relative;
 }
 
-/* Customize react-pdf text layer colors for selection */
+/* OCR Text Layer — невидимый слой для выделения текста */
+.ocr-text-layer {
+  color: transparent;
+  overflow: hidden;
+}
+
+.ocr-word {
+  color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.ocr-word::selection {
+  background: rgba(196, 167, 125, 0.35);
+  color: transparent;
+}
+
+/* react-pdf text layer */
 .react-pdf__Page__textContent {
   ::selection {
     background: var(--accent-gold-muted);

@@ -1,5 +1,6 @@
 import { getDB } from '../db/database';
 import { LocalEmbeddingService } from './local-embedding.service';
+import { AIService } from './ai.service';
 import { cosineSimilarity } from '../utils/cosine';
 
 export const MemoryService = {

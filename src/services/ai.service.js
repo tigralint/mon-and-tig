@@ -1,10 +1,22 @@
 import { GoogleGenAI } from '@google/genai';
 import { chunkText } from '../utils/chunker';
 
-// Инициализация. В MVP ключ берётся из .env. 
-// В проде это должно идти через ваш бэкенд для безопасности.
+/**
+ * Инициализация Gemini AI
+ * 
+ * Безопасный режим (рекомендуется):
+ *   VITE_GEMINI_BASE_URL = URL вашего Cloudflare Worker
+ *   API-ключ хранится в секретах Worker'а, клиент отправляет placeholder
+ * 
+ * Dev-режим (только для локальной разработки):
+ *   VITE_GEMINI_API_KEY = ваш API-ключ (попадает в бандл — небезопасно!)
+ */
 const baseUrl = import.meta.env.VITE_GEMINI_BASE_URL;
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const rawApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+// Если есть прокси — используем placeholder-ключ (Worker подставит настоящий)
+// Если нет — fallback на прямой ключ (для локальной разработки)
+const apiKey = baseUrl ? 'LUMEA_CLIENT' : rawApiKey;
 
 const ai = apiKey ? new GoogleGenAI({ 
   apiKey,
