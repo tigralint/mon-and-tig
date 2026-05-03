@@ -15,6 +15,8 @@ export const DataService = {
     const flashcards = await db.getAll('flashcards');
     const summaries = await db.getAll('summaries');
     const userMemory = await db.getAll('user_memory');
+    const chatSessions = await db.getAll('chat_sessions');
+    const studySessions = await db.getAll('study_sessions');
 
     // Документы без blob (файлы слишком большие для JSON)
     const documentsClean = documents.map(doc => ({
@@ -29,13 +31,15 @@ export const DataService = {
     }));
 
     const exportPayload = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       data: {
         documents: documentsClean,
         flashcards,
         summaries,
         userMemory,
+        chatSessions,
+        studySessions,
       }
     };
 
@@ -67,7 +71,7 @@ export const DataService = {
 
     const db = await getDB();
     const warnings = [];
-    const imported = { documents: 0, flashcards: 0, summaries: 0, userMemory: 0 };
+    const imported = { documents: 0, flashcards: 0, summaries: 0, userMemory: 0, chatSessions: 0, studySessions: 0 };
 
     // Импорт документов (без blob — только метаданные и текст)
     if (payload.data.documents) {
@@ -125,6 +129,35 @@ export const DataService = {
           }
         } catch (e) {
           warnings.push(`Память: ${e.message}`);
+        }
+      }
+    }
+    // Импорт чат-сессий
+    if (payload.data.chatSessions) {
+      for (const session of payload.data.chatSessions) {
+        try {
+          const existing = await db.get('chat_sessions', session.id);
+          if (!existing) {
+            await db.put('chat_sessions', session);
+            imported.chatSessions++;
+          }
+        } catch (e) {
+          warnings.push(`Чат: ${e.message}`);
+        }
+      }
+    }
+
+    // Импорт сессий обучения
+    if (payload.data.studySessions) {
+      for (const session of payload.data.studySessions) {
+        try {
+          const existing = await db.get('study_sessions', session.id);
+          if (!existing) {
+            await db.put('study_sessions', session);
+            imported.studySessions++;
+          }
+        } catch (e) {
+          warnings.push(`Сессия: ${e.message}`);
         }
       }
     }

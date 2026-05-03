@@ -15,8 +15,65 @@ const AiSidebar = ({ document, actionContext, onClearAction }) => {
   const [summary, setSummary] = useState(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [isGeneratingCards, setIsGeneratingCards] = useState(false);
+  const [freeQuestion, setFreeQuestion] = useState('');
   const messagesEndRef = useRef(null);
   const { addToast } = useToast();
+
+  // Свободный вопрос по документу
+  const handleFreeQuestion = async (e) => {
+    e.preventDefault();
+    if (!freeQuestion.trim() || isTyping) return;
+
+    const questionText = freeQuestion.trim();
+    setFreeQuestion('');
+
+    const docContext = document ? `[Контекст документа: "${document.name}"]\n` : '';
+    const docText = document?.textContent
+      ? document.textContent.substring(0, 30000)
+      : '';
+
+    const prompt = `Ты — AI-репетитор. Ответь на вопрос студента, основываясь ТОЛЬКО на тексте документа ниже.
+${docContext}
+Текст документа (фрагмент):
+"""
+${docText}
+"""
+
+${messages.length > 0 ? `История диалога:\n${messages.slice(-4).map(m => `${m.role === 'user' ? 'Студент' : 'Ассистент'}: ${m.content}`).join('\n')}\n` : ''}
+Вопрос студента: ${questionText}`;
+
+    const userMsg = { role: 'user', content: questionText };
+    setMessages(prev => [...prev, userMsg]);
+    setIsTyping(true);
+    setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+    try {
+      const memoryFacts = await MemoryService.getRelevantMemory(questionText, 3);
+      let systemInstruction = 'Ты — умный AI-репетитор. Отвечай на основе документа.';
+      if (memoryFacts?.length > 0) {
+        systemInstruction += `\n\nКонтекст о пользователе:\n- ${memoryFacts.join('\n- ')}`;
+      }
+
+      const stream = await AIService.streamContent(prompt, systemInstruction);
+      for await (const chunk of stream) {
+        setMessages(prev => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          updated[updated.length - 1] = { ...last, content: last.content + (chunk.text || '') };
+          return updated;
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1].content = 'Ошибка при генерации ответа.';
+        return updated;
+      });
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   // Загрузка сохранённого конспекта из БД
   useEffect(() => {
@@ -225,12 +282,12 @@ ${text}
 
         <hr className="sidebar-divider" />
 
-        {/* Секция Чата / Взаимодействий */}
+        {/* Секция Чата — свободный ввод + выделение */}
         <div className="chat-section">
-          <h4 className="section-title">Чат по выделению</h4>
+          <h4 className="section-title">Чат по документу</h4>
           {messages.length === 0 ? (
             <p className="text-muted text-small text-center" style={{padding: '20px 0'}}>
-              Выделите текст в документе слева, чтобы задать вопрос или создать карточку.
+              Задайте вопрос о документе или выделите текст слева.
             </p>
           ) : (
             <div className="messages-list">
@@ -245,6 +302,25 @@ ${text}
               <div ref={messagesEndRef} />
             </div>
           )}
+
+          {/* Свободный ввод вопросов */}
+          <form className="sidebar-chat-form" onSubmit={handleFreeQuestion}>
+            <input
+              type="text"
+              value={freeQuestion}
+              onChange={(e) => setFreeQuestion(e.target.value)}
+              placeholder="Спросите о документе..."
+              className="sidebar-chat-input"
+              disabled={isTyping}
+            />
+            <button
+              type="submit"
+              className="sidebar-chat-send interactive"
+              disabled={isTyping || !freeQuestion.trim()}
+            >
+              →
+            </button>
+          </form>
         </div>
       </div>
     </div>

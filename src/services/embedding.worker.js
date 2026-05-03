@@ -1,26 +1,10 @@
-/**
- * Web Worker для EmbeddingGemma-300M.
- * WASM backend + батчинг + warmup.
- * 
- * NOTE: WebGPU отключён — EmbeddingGemma имеет несовместимый LayerNorm shader
- * с ONNX Runtime Web. Когда ort-web или модель обновятся — можно вернуть.
- */
-import { AutoModel, AutoTokenizer } from '@huggingface/transformers';
+import { pipeline, env } from '@huggingface/transformers';
 
-const MODEL_ID = 'onnx-community/embeddinggemma-300m-ONNX';
+const MODEL_ID = 'Xenova/paraphrase-multilingual-MiniLM-L12-v2';
 const TARGET_DIM = 384;
-const FULL_DIM = 768;
 
-let model = null;
-let tokenizer = null;
-
-const normalize = (vec) => {
-  let norm = 0;
-  for (let i = 0; i < vec.length; i++) norm += vec[i] * vec[i];
-  norm = Math.sqrt(norm);
-  if (norm === 0) return vec;
-  return vec.map(v => v / norm);
-};
+let extractor = null;
+let activeDevice = 'wasm';
 
 const progressCb = (progress) => {
   if (progress.status === 'progress' && progress.total) {
@@ -33,62 +17,104 @@ const progressCb = (progress) => {
   }
 };
 
-const loadTokenizer = async () => {
-  if (tokenizer) return;
-  tokenizer = await AutoTokenizer.from_pretrained(MODEL_ID);
+const checkWebGPU = async () => {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.gpu) return false;
+    const adapter = await navigator.gpu.requestAdapter();
+    return !!adapter;
+  } catch {
+    return false;
+  }
+};
+
+// MiniLM не требует специальных префиксов для разделения запросов/документов
+const addPrefix = (text) => {
+  return text.length > 2000 ? text.substring(0, 2000) : text;
 };
 
 const loadModel = async () => {
-  if (model) return;
+  if (extractor) return;
 
-  console.log('🔄 Loading EmbeddingGemma (WASM q8)...');
-  model = await AutoModel.from_pretrained(MODEL_ID, {
-    dtype: 'q8',
-    progress_callback: progressCb,
-  });
-  console.log('✅ Model loaded (WASM q8)');
+  const hasWebGPU = await checkWebGPU();
 
-  // Warmup: JIT-compile with a dummy inference
-  if (!tokenizer) await loadTokenizer();
-  console.log('🔥 Warmup...');
-  const t0 = performance.now();
-  const inputs = await tokenizer('warmup', { padding: true, truncation: true });
-  await model(inputs);
-  console.log(`🔥 Warmup done in ${(performance.now() - t0).toFixed(0)}ms`);
+  // Попытка 1: WebGPU
+  if (hasWebGPU) {
+    try {
+      console.log('🚀 Loading paraphrase-multilingual-MiniLM-L12-v2 (WebGPU)...');
+      self.postMessage({ type: 'progress', pct: 5, status: 'Загрузка модели (WebGPU)...' });
 
-  self.postMessage({ type: 'progress', pct: 100, done: true, modelReady: true, device: 'wasm' });
-};
+      extractor = await pipeline('feature-extraction', MODEL_ID, {
+        device: 'webgpu',
+        dtype: 'fp32',
+        progress_callback: progressCb,
+      });
 
-const addPrefix = (text, mode) => {
-  const truncated = text.length > 2000 ? text.substring(0, 2000) : text;
-  switch (mode) {
-    case 'query': return `task: search result | query: ${truncated}`;
-    case 'clustering': return `task: categorize the text | query: ${truncated}`;
-    default: return `title: none | text: ${truncated}`;
+      // Warmup — проверяем что inference реально работает
+      console.log('🔥 WebGPU warmup...');
+      const warmupResult = await extractor('warmup test', { pooling: 'mean', normalize: true });
+      if (!warmupResult || !warmupResult.data) throw new Error('Empty warmup result');
+
+      activeDevice = 'webgpu';
+      console.log('✅ Model ready (WebGPU fp32)');
+    } catch (gpuErr) {
+      console.warn('⚠️ WebGPU failed, falling back to WASM:', gpuErr.message);
+      // Dispose broken pipeline
+      if (extractor?.dispose) {
+        try { await extractor.dispose(); } catch { }
+      }
+      extractor = null;
+    }
   }
+
+  // Попытка 2: WASM (q8 квантизация, гарантированно работает)
+  if (!extractor) {
+    console.log('🔄 Loading paraphrase-multilingual-MiniLM-L12-v2 (WASM q8)...');
+    self.postMessage({ type: 'progress', pct: 5, status: 'Загрузка модели (WASM)...' });
+
+    extractor = await pipeline('feature-extraction', MODEL_ID, {
+      dtype: 'q8',
+      progress_callback: progressCb,
+    });
+
+    // WASM warmup
+    console.log('🔥 WASM warmup...');
+    const t0 = performance.now();
+    await extractor('warmup test', { pooling: 'mean', normalize: true });
+    activeDevice = 'wasm';
+    console.log(`✅ Model ready (WASM q8) in ${(performance.now() - t0).toFixed(0)}ms`);
+  }
+
+  self.postMessage({
+    type: 'progress',
+    pct: 100,
+    done: true,
+    modelReady: true,
+    device: activeDevice,
+  });
 };
 
 // ─── Single embed ───
 const embed = async (text, mode) => {
   const prefixed = addPrefix(text, mode);
-  const inputs = await tokenizer(prefixed, { padding: true, truncation: true });
-  const output = await model(inputs);
-  const full = Array.from(output.sentence_embedding.data);
-  return normalize(full.slice(0, TARGET_DIM));
+  const result = await extractor(prefixed, { pooling: 'mean', normalize: true });
+  return Array.from(result.data).slice(0, TARGET_DIM);
 };
 
 // ─── Batch embed ───
 const embedBatch = async (texts, modes) => {
   const prefixed = texts.map((t, i) => addPrefix(t, modes?.[i] || 'document'));
-  const inputs = await tokenizer(prefixed, { padding: true, truncation: true });
-  const output = await model(inputs);
-  const data = output.sentence_embedding.data;
-
   const results = [];
-  for (let i = 0; i < texts.length; i++) {
-    const offset = i * FULL_DIM;
-    const full = Array.from(data.slice(offset, offset + FULL_DIM));
-    results.push(normalize(full.slice(0, TARGET_DIM)));
+
+  // Pipeline API может батчить, но для надёжности — по одному
+  // (избегаем OOM на GPU при большом батче)
+  for (let i = 0; i < prefixed.length; i++) {
+    const result = await extractor(prefixed[i], { pooling: 'mean', normalize: true });
+    results.push(Array.from(result.data).slice(0, TARGET_DIM));
+
+    // Progress для длинных батчей
+    if (texts.length > 5 && i % 5 === 0) {
+      self.postMessage({ type: 'batchProgress', current: i + 1, total: texts.length });
+    }
   }
   return results;
 };
@@ -100,18 +126,18 @@ self.onmessage = async (e) => {
   try {
     switch (type) {
       case 'preload': {
-        await Promise.all([loadModel(), loadTokenizer()]);
-        self.postMessage({ type: 'preloaded', id, device: 'wasm' });
+        await loadModel();
+        self.postMessage({ type: 'preloaded', id, device: activeDevice });
         break;
       }
       case 'embed': {
-        if (!model) await loadModel();
+        if (!extractor) await loadModel();
         const embedding = await embed(text, mode);
         self.postMessage({ type: 'result', id, embedding });
         break;
       }
       case 'embedBatch': {
-        if (!model) await loadModel();
+        if (!extractor) await loadModel();
         const embeddings = await embedBatch(texts, modes);
         self.postMessage({ type: 'batchResult', id, embeddings });
         break;
@@ -120,6 +146,7 @@ self.onmessage = async (e) => {
         self.postMessage({ type: 'error', id, error: `Unknown message type: ${type}` });
     }
   } catch (err) {
+    console.error('Worker error:', err);
     self.postMessage({ type: 'error', id, error: err.message });
   }
 };

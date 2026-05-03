@@ -1,5 +1,11 @@
-:root {
-  /* Colors: Quiet Luxury Palette */
+/* ═══════════════════════════════════════
+   Design Tokens — Lumea
+   Dark (default) + Light theme
+   ═══════════════════════════════════════ */
+
+:root,
+[data-theme="dark"] {
+  /* Colors: Quiet Luxury Palette (Dark) */
   --bg-primary: #0a0a0b;
   --bg-secondary: #121214;
   --bg-tertiary: #1a1a1e;
@@ -16,7 +22,63 @@
   --border-focus: rgba(196, 167, 125, 0.5);
 
   --glass-bg: rgba(18, 18, 20, 0.7);
+
+  /* Semantic Colors */
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+/* ─── Light Theme ─── */
+[data-theme="light"] {
+  --bg-primary: #f8f6f3;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #eeecea;
   
+  --text-primary: #1a1a1e;
+  --text-secondary: #5e5e62;
+  --text-muted: #8a8a8e;
+  
+  --accent-gold: #9a7b4f;
+  --accent-gold-hover: #806539;
+  --accent-gold-muted: rgba(154, 123, 79, 0.12);
+  
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-focus: rgba(154, 123, 79, 0.5);
+
+  --glass-bg: rgba(255, 255, 255, 0.8);
+
+  /* Semantic Colors (adjusted for light bg) */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+
+  /* Shadows (lighter) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.06);
+
+  color-scheme: light;
+}
+
+/* ─── Theme Transition ─── */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ═══ Shared Tokens (not theme-dependent) ═══ */
+:root {
   /* Typography */
   --font-family-sans: 'Golos Text', 'Inter', system-ui, -apple-system, sans-serif;
   
@@ -33,12 +95,6 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 9999px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
   
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);

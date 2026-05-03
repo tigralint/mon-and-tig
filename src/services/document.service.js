@@ -95,9 +95,96 @@ export const DocumentService = {
       return { text, ocrPages: null };
     }
 
-    // Неизвестный формат
+    // PowerPoint (.pptx)
+    if (extension === 'pptx') {
+      onStatus?.({ status: '📊 Парсим презентацию...', pct: 30 });
+      const text = await this._parsePptx(file);
+      return { text, ocrPages: null };
+    }
+
+    // Markdown (.md)
+    if (extension === 'md') {
+      onStatus?.({ status: '📝 Читаем Markdown...', pct: 50 });
+      const text = await file.text();
+      return { text, ocrPages: null };
+    }
+
+    // Plain text (.txt)
+    if (extension === 'txt') {
+      onStatus?.({ status: '📄 Читаем текст...', pct: 50 });
+      const text = await file.text();
+      return { text, ocrPages: null };
+    }
+
+    // Images → OCR
+    if (['png', 'jpg', 'jpeg', 'webp', 'bmp'].includes(extension) || file.type?.startsWith('image/')) {
+      onStatus?.({ status: '🔤 OCR: распознаём изображение...', pct: 20 });
+      const text = await this._parseImage(file, onStatus);
+      return { text, ocrPages: null };
+    }
+
+    // Неизвестный формат — пробуем как текст
+    try {
+      const text = await file.text();
+      if (text && text.length > 10) return { text, ocrPages: null };
+    } catch { /* ignore */ }
+
     return { text: '', ocrPages: null };
   },
+
+  /**
+   * Парсинг PowerPoint (.pptx) — извлечение текста из слайдов.
+   */
+  async _parsePptx(file) {
+    try {
+      const { default: parsePptx } = await import('pptx-parser');
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await parsePptx(arrayBuffer);
+
+      // pptx-parser возвращает массив слайдов, каждый с текстовым содержимым
+      if (Array.isArray(result)) {
+        return result
+          .map((slide, i) => {
+            const texts = [];
+            if (slide.title) texts.push(slide.title);
+            if (slide.content) texts.push(typeof slide.content === 'string' ? slide.content : JSON.stringify(slide.content));
+            if (slide.notes) texts.push(`[Заметки]: ${slide.notes}`);
+            if (slide.text) texts.push(slide.text);
+            return `--- Слайд ${i + 1} ---\n${texts.join('\n')}`;
+          })
+          .join('\n\n');
+      }
+
+      // Fallback: если результат — строка
+      if (typeof result === 'string') return result;
+      return JSON.stringify(result, null, 2);
+    } catch (error) {
+      console.error('PPTX parsing failed:', error);
+      throw new Error(`Ошибка парсинга PowerPoint: ${error.message}`);
+    }
+  },
+
+  /**
+   * OCR одного изображения через Tesseract.
+   */
+  async _parseImage(file, onStatus) {
+    try {
+      const { createWorker } = await import('tesseract.js');
+      
+      onStatus?.({ status: '🔤 OCR: загружаем модель...', pct: 30 });
+      const worker = await createWorker(['eng', 'rus', 'deu', 'fra'], 1, { logger: () => {} });
+      
+      onStatus?.({ status: '🔤 OCR: распознаём текст...', pct: 60 });
+      const { data } = await worker.recognize(file);
+      await worker.terminate();
+      
+      return (data.text || '').trim();
+    } catch (error) {
+      console.error('Image OCR failed:', error);
+      throw new Error(`Ошибка OCR: ${error.message}`);
+    }
+  },
+
 
   async _parsePdfWithOCR(file, onStatus) {
     onStatus?.({ status: '📄 Читаем PDF...', pct: 5 });

@@ -26,8 +26,12 @@ const FileUploader = ({ onUpload }) => {
     accept: {
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+      'text/markdown': ['.md'],
+      'text/plain': ['.txt'],
       'image/jpeg': ['.jpg', '.jpeg'],
-      'image/png': ['.png']
+      'image/png': ['.png'],
+      'image/webp': ['.webp'],
     }
   });
 
@@ -47,7 +51,7 @@ const FileUploader = ({ onUpload }) => {
           <p>
             Перетащите файлы сюда или <span className="text-accent">нажмите</span> для выбора
             <br/>
-            <span className="text-small text-muted">Поддерживаются: PDF, DOCX, PNG, JPG</span>
+            <span className="text-small text-muted">PDF, DOCX, PPTX, Markdown, TXT, изображения</span>
           </p>
         )}
       </div>

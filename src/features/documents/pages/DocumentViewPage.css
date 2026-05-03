@@ -1,0 +1,101 @@
+/* ===== Document View Page ===== */
+
+.document-view-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+.dvp-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.dvp-back-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  margin-right: var(--spacing-md);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.dvp-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dvp-split {
+  display: flex;
+  flex: 1;
+  gap: var(--spacing-md);
+  overflow: hidden;
+}
+
+.dvp-document-panel {
+  flex: 1.5;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.dvp-ai-panel {
+  flex: 1;
+  min-width: 350px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Viewers */
+.dvp-docx-viewer {
+  padding: 40px;
+  overflow-y: auto;
+  height: 100%;
+  background: white;
+  color: black;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.dvp-text-viewer {
+  padding: 20px;
+  overflow-y: auto;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+.dvp-text-viewer pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* Loading skeleton */
+.dvp-skeleton {
+  padding: 40px;
+}
+
+.dvp-skeleton-split {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 150px);
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .dvp-split {
+    flex-direction: column;
+  }
+
+  .dvp-ai-panel {
+    min-width: 0;
+    max-height: 400px;
+  }
+}

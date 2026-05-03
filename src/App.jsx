@@ -9,6 +9,7 @@ import StudySessionPage from './features/flashcards/pages/StudySessionPage';
 
 import SearchPage from './features/search/pages/SearchPage';
 import ConstellationPage from './features/constellation/pages/ConstellationPage';
+import AnalyticsPage from './features/analytics/pages/AnalyticsPage';
 import BillingPage from './features/billing/pages/BillingPage';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="flashcards/study" element={<StudySessionPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="constellation" element={<ConstellationPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="billing" element={<BillingPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

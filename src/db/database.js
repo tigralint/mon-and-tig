@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'msu-smart-hub-db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export const initDB = async () => {
   const db = await openDB(DB_NAME, DB_VERSION, {
@@ -39,6 +39,18 @@ export const initDB = async () => {
       if (!db.objectStoreNames.contains('user_memory')) {
         const memoryStore = db.createObjectStore('user_memory', { keyPath: 'id' });
         memoryStore.createIndex('timestamp', 'timestamp');
+      }
+
+      // v3: История RAG-чатов
+      if (!db.objectStoreNames.contains('chat_sessions')) {
+        const chatStore = db.createObjectStore('chat_sessions', { keyPath: 'id' });
+        chatStore.createIndex('updatedAt', 'updatedAt');
+      }
+
+      // v3: Сессии обучения для аналитики
+      if (!db.objectStoreNames.contains('study_sessions')) {
+        const sessionStore = db.createObjectStore('study_sessions', { keyPath: 'id' });
+        sessionStore.createIndex('date', 'date');
       }
     },
   });

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Layers, Search, Sparkles } from 'lucide-react';
+import { Home, FileText, Layers, Search, Sparkles, BarChart3 } from 'lucide-react';
 import './BottomNav.css';
 
 const BottomNav = () => {
@@ -24,6 +24,10 @@ const BottomNav = () => {
       <NavLink to="/constellation" className={({isActive}) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
         <Sparkles size={22} />
         <span>Звёзды</span>
+      </NavLink>
+      <NavLink to="/analytics" className={({isActive}) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+        <BarChart3 size={22} />
+        <span>Статы</span>
       </NavLink>
     </nav>
   );

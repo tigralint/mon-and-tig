@@ -23,6 +23,9 @@ const Sidebar = () => {
         <NavLink to="/constellation" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link interactive'}>
           Созвездие
         </NavLink>
+        <NavLink to="/analytics" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link interactive'}>
+          Аналитика
+        </NavLink>
       </nav>
       <div className="sidebar-footer">
         <NavLink to="/billing" className="nav-link interactive upgrade-link">

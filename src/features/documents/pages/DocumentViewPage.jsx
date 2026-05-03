@@ -6,6 +6,7 @@ import TextSelectionToolbar from '../components/TextSelectionToolbar';
 import { DocumentService } from '../../../services/document.service';
 import Skeleton from '../../../components/ui/Skeleton';
 import mammoth from 'mammoth';
+import './DocumentViewPage.css';
 
 const DocumentViewPage = () => {
   const { id } = useParams();
@@ -58,9 +59,9 @@ const DocumentViewPage = () => {
   }, [document]);
 
   if (!document) return (
-    <div style={{padding: '40px'}}>
+    <div className="dvp-skeleton">
       <Skeleton height="40px" width="30%" style={{marginBottom: '20px'}}/>
-      <div style={{display: 'flex', gap: '20px', height: 'calc(100vh - 150px)'}}>
+      <div className="dvp-skeleton-split">
         <Skeleton height="100%" width="60%" />
         <Skeleton height="100%" width="40%" />
       </div>
@@ -79,32 +80,31 @@ const DocumentViewPage = () => {
   const isWord = document.type.includes('word');
 
   return (
-    <div className="document-view-page fade-in" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
-      <div className="page-header" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', flexShrink: 0 }}>
+    <div className="document-view-page fade-in">
+      <div className="dvp-header">
         <button 
           onClick={() => navigate('/documents')}
-          style={{ padding: '8px 12px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', marginRight: '16px' }}
-          className="interactive"
+          className="dvp-back-btn interactive"
         >
           ← Назад
         </button>
         <div>
-          <h2 style={{ fontSize: '20px' }}>{document.name}</h2>
+          <h2 className="dvp-title">{document.name}</h2>
           <p className="text-small text-muted">
             {new Date(document.createdAt).toLocaleDateString('ru-RU')}
           </p>
         </div>
       </div>
       
-      <div className="split-view-container" style={{ display: 'flex', flex: 1, gap: '16px', overflow: 'hidden' }}>
-        <div className="document-panel" style={{ flex: '1.5', position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+      <div className="dvp-split">
+        <div className="dvp-document-panel">
           {isPdf && contentUrl ? (
             <PdfViewer fileUrl={contentUrl} textContent={document.textContent} ocrPages={document.ocrPages} />
           ) : isWord ? (
-            <div className="docx-viewer" style={{ padding: '40px', overflowY: 'auto', height: '100%', background: 'white', color: 'black', fontSize: '16px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: docxHtml || '<p>Загрузка документа...</p>' }} />
+            <div className="dvp-docx-viewer" dangerouslySetInnerHTML={{ __html: docxHtml || '<p>Загрузка документа...</p>' }} />
           ) : (
-            <div style={{ padding: '20px', overflowY: 'auto', height: '100%', background: 'var(--bg-primary)' }}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+            <div className="dvp-text-viewer">
+              <pre>
                 {document.textContent || "Текст недоступен."}
               </pre>
             </div>
@@ -112,7 +112,7 @@ const DocumentViewPage = () => {
           <TextSelectionToolbar onAction={handleToolbarAction} />
         </div>
         
-        <div className="ai-panel" style={{ flex: '1', minWidth: '350px', overflow: 'hidden', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+        <div className="dvp-ai-panel">
           <AiSidebar 
             document={document} 
             actionContext={actionContext} 
